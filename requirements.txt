@@ -1,0 +1,17 @@
+os
+flask 
+werkzeug
+flask_mysqldb
+PIL
+dlib
+difflib
+pickle
+sys
+jinja2 
+json
+click
+math
+re
+numpy 
+scipy
+face_recognition

@@ -1,0 +1,226 @@
+<!Doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{{ url_for('static',filename='js/jquery-3.4.1.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/popper.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{url_for('static',filename='js/custom.js') }}"></script>
+
+    <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/heroic-features.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+		.inputfile {
+			width: 0.1px;
+			height: 0.1px;
+			opacity: 0;
+			overflow: hidden;
+			position: absolute;
+			z-index: -1;
+		}
+		#output-img {
+		    background-color: #24384a52;
+            border-radius: 20px;
+            box-shadow: 10px 10px grey;
+		}
+		#output-img_2 {
+		    background-color: #24384a52;
+            border-radius: 20px;
+            box-shadow: 10px 10px grey;
+
+		}
+
+
+        body{
+            background-color:#020d19;
+        }
+
+        h6 {
+            color: #3999f9;
+            font-weight:bold
+        }
+
+        h2,h3,h4 .content-alignment {
+           text-align: center;
+           color: #3999f9;
+        }
+
+        .grow { transition: all .2s ease-in-out; }
+        .grow:hover { transform: scale(2.0); }
+
+
+
+
+    </style>
+    <head>
+<body>
+<div class="container" id="query_image">
+    <form enctype="multipart/form-data" id="file-upload-form" class="uploader">
+        <div class="row text-center">
+            <div class="col-md-4 col-sm-6 hero-feature"></div>
+            <div class="col-md-4 col-sm-6 hero-feature">
+
+                <div class="thumbnail">
+                    <br>
+                    <img src="{{ url_for('static',filename='images/anonymous.svg') }}" class="input_path" id="output"
+                         style="max-width:250px;  max-height: 250px"
+                         alt="Match">
+
+                </div>
+                <br>
+                <label class="btn btn-primary" style="width:200px;margin:2px">
+                    <input type="file" class="inputfile" id="file-upload"
+                           accept="image/*" onchange="loadFile(event)" name="file"/>
+
+                    <i class="fa fa-upload" style="font-size:24px"></i>
+                </label>
+
+
+            </div>
+
+        </div>
+    </form>
+
+</div>
+
+<br>
+<div class="col-md-4 col-sm-6 hero-feature"></div>
+
+<div class="row text-center">
+    <div class="col-md-4 col-sm-6 hero-feature"></div>
+    <div class="col-md-4 col-sm-6 hero-feature">
+        <i id="processid" class="fa fa-spinner" style="font-size:48px; color: #3999f9; display: none"></i>
+    </div>
+    <div class="col-md-4 col-sm-6 hero-feature"></div>
+</div>
+<br>
+
+<div class="container">
+    <h2>FACE SIMILARITY</h2>
+    <div class="row">
+        <div class="col-sm-5 col-md-5 " id="top_matches"><h3>TOP MATCHES</h3></div>
+        <div class="col-sm-2 col-md-2"></div>
+        <div class="col-sm-5 col-md-5 " id="look_alike"><h3>LOOK ALIKES</h3></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-5 col-md-5 " id="output-img"></div>
+        <div class="col-sm-2 col-md-2"></div>
+        <div class="col-sm-5 col-md-5 " id="output-img_2"></div>
+    </div>
+
+    <div class="caption" style="display: none">
+        <h3>XYZ</h3>
+        <p>Details...</p>
+
+    </div>
+</div>
+
+</body>
+<script>
+	  var loadFile = function(event) {
+	    var input_path = document.getElementById('output').src
+<!--	    var input_path = $('.input_path').attr('id');-->
+	    console.log("test")
+	    console.log(input_path)
+<!--	    var output = document.getElementById('output');-->
+	    console.log(event.target.files[0])
+        output.src = URL.createObjectURL(event.target.files[0]);
+	    formdata = new FormData();
+        formdata.append("file", event.target.files[0]);
+	    $("#processid").show();
+	    jQuery.ajax({
+            url: '/top_matches',
+            type: "POST",
+            data: formdata,
+            processData: false,
+            contentType: false,
+            beforeSend: function() {
+                 $("#processid").addClass("fa-pulse");
+                 $('#output-img').empty();
+                 $('#output-img_2').empty();
+            },
+            success: function (result) {
+
+                if(result.status == true)
+                {
+
+                    htmlstr = '';
+                    if(result.top_matches.hists.length == 0){
+
+                        htmlstr += '<div class="row"><h5 style = "color: #3999f9">No Top Match Images Found</h5></div>'
+                        $('#output-img').append(htmlstr)
+                    }
+
+                    else {
+                         for(var i=0; i< result.top_matches.hists.length; i++)
+                        {
+                            if  (i%2 == 0 && i>0)
+                                htmlstr+= '</div><div class="row">'
+                            else if(i==0)
+                                htmlstr += '<br><div class="row">'
+
+                            htmlstr += '<div class="col-sm-6 col-md-6 col-lg-6 thumb">'
+                            htmlstr += '<div class="content-alignment"><div class = "grow">'
+                            htmlstr += '<img src="static/'+result.top_matches.hists[i]+'" alt="'+result.top_matches.hists[i]+'" style="border-radius:50%" width="100px" height="100px" ></div>'
+                            htmlstr += '<h6>'+result.top_matches.confidence[i]+'</h6>'
+                            htmlstr += '<h6>'+result.top_matches.name[i]+'</h6>'
+                            htmlstr += '</div></div>'
+
+
+                        }
+                        htmlstr += '</div>';
+                        console.log(htmlstr)
+                        $('#output-img').append(htmlstr)
+                    }
+
+
+
+                    htmlstr2 = '';
+                    if(result.look_alike.hists.length == 0){
+
+                        htmlstr2 += '<div class="row"><h5 style = "color: #3999f9">No Look Alike Images Found</h5></div>'
+                        $('#output-img_2').append(htmlstr2)
+                    }
+
+                    else {
+                        for(var i=0; i< result.look_alike.hists.length; i++)
+                        {
+                            if  (i%2 == 0 && i>0)
+                                htmlstr2 += '</div><div class="row">'
+                            else if(i==0)
+                                htmlstr2 += '<br><div class="row">'
+
+                            htmlstr2 += '<div class="col-sm-6 col-md-6 col-lg-6 thumb">'
+                            htmlstr2 += '<div class="content-alignment"><div class = "grow">'
+                            htmlstr2 += '<img src="static/'+result.look_alike.hists[i]+'" alt="'+result.look_alike.hists[i]+'" style="border-radius:50%" width="100px" height="100px" ></div>'
+                            htmlstr2 += '<h6>'+result.look_alike.confidence[i]+'</h6>'
+                            htmlstr2 += '<h6>'+result.look_alike.name[i]+'</h6>'
+                            htmlstr2 += '</div></div>'
+
+                        }
+                    htmlstr2 += '</div>';
+                    console.log(htmlstr2)
+                    $('#output-img_2').append(htmlstr2)
+                    }
+                }
+            },
+            complete: function () {
+                $("#processid").removeClass("fa-pulse");
+                $("#processid").css("display", "none");
+            },
+            fail: function(){
+               alert('request failed');
+            }
+        });
+
+
+	  };
+
+
+
+
+
+</script>
+</html>

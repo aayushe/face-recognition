@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Store Report
+    </title>
+</head>
+<body>
+
+{% for hist in hists %}
+
+<img src="{{url_for('static', filename=hist)}}" alt="{{hist}}" style="width:150px;height:200px">
+<h3>{{confidence[hists.index(hist)]}}</h3>
+<h3>{{name[hists.index(hist)]}}</h3>
+{% endfor %}
+</body>
+</html>
